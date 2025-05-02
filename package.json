@@ -13,7 +13,7 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "https://Mystonats.github.io/odin-accuracy-calculator",
+  "homepage": "https://Mystonats.github.io/accuracy-calculator",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
