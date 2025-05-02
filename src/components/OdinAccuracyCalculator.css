@@ -1,0 +1,138 @@
+/* Main container */
+.calculator-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  /* Title */
+  .calculator-title {
+    color: #1e40af;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  /* Form layout */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: #374151;
+  }
+  
+  .form-input, 
+  .form-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  
+  /* Results section */
+  .results-section {
+    background-color: #eff6ff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .section-title {
+    color: #1e40af;
+    font-size: 1.125rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 0.5rem;
+  }
+  
+  .results-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .results-value {
+    font-size: 0.875rem;
+  }
+  
+  .hit-rate {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e40af;
+  }
+  
+  /* Recommendations section */
+  .recommendations-section {
+    background-color: #fffbeb;
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  .message-low {
+    color: #dc2626;
+    font-size: 0.875rem;
+  }
+  
+  .message-medium {
+    color: #d97706;
+    font-size: 0.875rem;
+  }
+  
+  .message-good {
+    color: #16a34a;
+    font-size: 0.875rem;
+  }
+  
+  .warning {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+  }
+  
+  /* Footer */
+  .footer {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    text-align: center;
+    color: #6b7280;
+  }
+  
+  /* Responsive adjustments for small screens */
+  @media (max-width: 640px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .results-grid {
+      grid-template-columns: 1fr;
+      row-gap: 0.25rem;
+    }
+    
+    .results-label {
+      font-weight: 600;
+    }
+  }
