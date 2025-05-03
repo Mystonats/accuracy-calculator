@@ -7,6 +7,10 @@ const OdinAccuracyCalculator = () => {
   const [accuracyStat, setAccuracyStat] = useState(150);
   const [region, setRegion] = useState('jotunheim');
   const [attackType, setAttackType] = useState('normal');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [additionalAccuracy, setAdditionalAccuracy] = useState(0);
+  const [targetHitRate, setTargetHitRate] = useState(80);
+  const [recommendedAccuracy, setRecommendedAccuracy] = useState(0);
   
   const [hitRate, setHitRate] = useState(0);
   const [adjustedHitRate, setAdjustedHitRate] = useState(0);
@@ -25,12 +29,28 @@ const OdinAccuracyCalculator = () => {
     '-30': 47.06, '-31': 46.51, '-32': 45.98, '-33': 45.45
   };
 
+  // Finding the closest hit rate key in the accuracy table
+  const findClosestAccuracyDiff = (targetRate) => {
+    let closestDiff = null;
+    let minRateDifference = Number.MAX_VALUE;
+    
+    for (const [diff, rate] of Object.entries(accuracyTable)) {
+      const rateDifference = Math.abs(rate - targetRate);
+      if (rateDifference < minRateDifference) {
+        minRateDifference = rateDifference;
+        closestDiff = parseInt(diff);
+      }
+    }
+    
+    return closestDiff;
+  };
+
   useEffect(() => {
     // Calculate accuracy difference
     const levelDifference = characterLevel - monsterLevel;
     const levelPenalty = levelDifference * 3;
     const baseAccuracyNeeded = characterLevel * 3;
-    const adjustedAccuracy = accuracyStat - baseAccuracyNeeded + levelPenalty;
+    const adjustedAccuracy = accuracyStat + additionalAccuracy - baseAccuracyNeeded + levelPenalty;
     
     setAccuracyDiff(adjustedAccuracy);
     
@@ -59,7 +79,63 @@ const OdinAccuracyCalculator = () => {
     
     setAdjustedHitRate(finalHitRate);
     
-  }, [characterLevel, monsterLevel, accuracyStat, region, attackType]);
+    // Calculate recommended accuracy for target hit rate
+    calculateRecommendedAccuracy();
+    
+  }, [characterLevel, monsterLevel, accuracyStat, region, attackType, additionalAccuracy, targetHitRate]);
+  
+  const calculateRecommendedAccuracy = () => {
+    // Adjust target hit rate based on region and attack type
+    let adjustedTargetRate = targetHitRate;
+    
+    if (region === 'midgard') {
+      adjustedTargetRate -= 20;
+    }
+    
+    if (attackType === 'skill') {
+      adjustedTargetRate -= 10;
+    }
+    
+    // Ensure the adjusted target rate is within bounds
+    adjustedTargetRate = Math.max(45.45, Math.min(88.89, adjustedTargetRate));
+    
+    // Find the accuracy difference needed for the target hit rate
+    const neededAccuracyDiff = findClosestAccuracyDiff(adjustedTargetRate);
+    
+    // Calculate total accuracy needed
+    const levelDifference = characterLevel - monsterLevel;
+    const levelPenalty = levelDifference * 3;
+    const baseAccuracyNeeded = characterLevel * 3;
+    
+    const recommendedAcc = baseAccuracyNeeded - levelPenalty + neededAccuracyDiff - additionalAccuracy;
+    setRecommendedAccuracy(recommendedAcc);
+  };
+  
+  const renderAccuracyGauge = () => {
+    const percentage = Math.min(100, Math.max(0, adjustedHitRate));
+    let color = '#ef4444'; // Red for low hit rate
+    
+    if (adjustedHitRate >= 85) {
+      color = '#22c55e'; // Green for high hit rate
+    } else if (adjustedHitRate >= 70) {
+      color = '#f59e0b'; // Yellow for medium hit rate
+    }
+    
+    return (
+      <div className="accuracy-gauge-container">
+        <div className="accuracy-gauge-background">
+          <div 
+            className="accuracy-gauge-fill" 
+            style={{ 
+              width: `${percentage}%`,
+              backgroundColor: color
+            }}
+          ></div>
+        </div>
+        <div className="accuracy-gauge-label">{adjustedHitRate.toFixed(2)}%</div>
+      </div>
+    );
+  };
 
   return (
     <div className="calculator-container">
@@ -126,8 +202,48 @@ const OdinAccuracyCalculator = () => {
         </div>
       </div>
       
+      <div className="advanced-toggle">
+        <button 
+          className="advanced-button" 
+          onClick={() => setShowAdvanced(!showAdvanced)}
+        >
+          {showAdvanced ? 'Hide Advanced Options' : 'Show Advanced Options'}
+        </button>
+      </div>
+      
+      {showAdvanced && (
+        <div className="advanced-options">
+          <div className="form-grid">
+            <div className="form-group">
+              <label className="form-label">Additional Accuracy (Buffs/Gear)</label>
+              <input
+                type="number"
+                value={additionalAccuracy}
+                onChange={(e) => setAdditionalAccuracy(parseInt(e.target.value) || 0)}
+                min="0"
+                className="form-input"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Target Hit Rate (%)</label>
+              <input
+                type="number"
+                value={targetHitRate}
+                onChange={(e) => setTargetHitRate(parseInt(e.target.value) || 0)}
+                min="0"
+                max="99"
+                className="form-input"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="results-section">
-        <h2 className="section-title">Results</h2>
+        <h2 className="section-title">Your Hit Rate</h2>
+        
+        {renderAccuracyGauge()}
         
         <div className="results-grid">
           <div className="results-label">Base accuracy needed:</div>
@@ -137,13 +253,20 @@ const OdinAccuracyCalculator = () => {
           <div className="results-value">{characterLevel - monsterLevel} ({(characterLevel - monsterLevel) * 3} accuracy points)</div>
           
           <div className="results-label">Accuracy differential:</div>
-          <div className="results-value">{accuracyDiff}</div>
+          <div className="results-value">{accuracyDiff + additionalAccuracy}</div>
           
           <div className="results-label">Base hit rate:</div>
           <div className="results-value">{hitRate.toFixed(2)}%</div>
           
-          <div className="results-label">Final hit rate:</div>
-          <div className="hit-rate">{adjustedHitRate.toFixed(2)}%</div>
+          {showAdvanced && (
+            <>
+              <div className="results-label recommended">Recommended accuracy for {targetHitRate}% hit rate:</div>
+              <div className="results-value recommended">{recommendedAccuracy}</div>
+              
+              <div className="results-label">Accuracy needed to increase:</div>
+              <div className="results-value">{Math.max(0, recommendedAccuracy - accuracyStat)}</div>
+            </>
+          )}
         </div>
       </div>
       
@@ -161,10 +284,22 @@ const OdinAccuracyCalculator = () => {
         {monsterLevel > characterLevel + 3 && (
           <p className="warning">Warning: You are fighting monsters significantly above your level. This will result in lower hit rates.</p>
         )}
+        
+        <div className="strategy-tips">
+          <h3 className="tips-title">Strategy Tips</h3>
+          <ul className="tips-list">
+            <li>When fighting higher-level monsters, prioritize using skills over basic attacks</li>
+            <li>Accuracy becomes more effective as you get more of it - each point is more valuable than the last</li>
+            <li>For optimal performance in endgame zones, aim for 85%+ hit rate</li>
+            <li>In Midgard zones, you can get by with less accuracy due to the +20% hidden bonus</li>
+            <li>If your hit rate is below 70%, prioritize accuracy over other stats</li>
+          </ul>
+        </div>
       </div>
       
       <div className="footer">
-        Based on data from <a href="https://www.inven.co.kr/webzine/news/?news=259851&site=odin" target="_blank" rel="noopener noreferrer">Inven.co.kr article</a>
+        <p>Based on data from <a href="https://www.inven.co.kr/webzine/news/?news=259851&site=odin" target="_blank" rel="noopener noreferrer">Inven.co.kr article</a></p>
+        <p className="version">Calculator Version 1.1 | Last Updated: May 2025</p>
       </div>
     </div>
   );
