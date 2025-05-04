@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/accuracy-calculator/static/css/main.4ae54317.css",
-    "main.js": "/accuracy-calculator/static/js/main.737f4670.js",
+    "main.js": "/accuracy-calculator/static/js/main.2495a782.js",
     "static/js/453.e47664af.chunk.js": "/accuracy-calculator/static/js/453.e47664af.chunk.js",
     "index.html": "/accuracy-calculator/index.html",
     "main.4ae54317.css.map": "/accuracy-calculator/static/css/main.4ae54317.css.map",
-    "main.737f4670.js.map": "/accuracy-calculator/static/js/main.737f4670.js.map",
+    "main.2495a782.js.map": "/accuracy-calculator/static/js/main.2495a782.js.map",
     "453.e47664af.chunk.js.map": "/accuracy-calculator/static/js/453.e47664af.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.4ae54317.css",
-    "static/js/main.737f4670.js"
+    "static/js/main.2495a782.js"
   ]
 }
