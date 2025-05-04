@@ -7,10 +7,16 @@ const OdinAccuracyCalculator = () => {
   const [accuracyStat, setAccuracyStat] = useState(150);
   const [region, setRegion] = useState('jotunheim');
   const [attackType, setAttackType] = useState('normal');
+  const [characterClass, setCharacterClass] = useState('warrior');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [additionalAccuracy, setAdditionalAccuracy] = useState(0);
   const [targetHitRate, setTargetHitRate] = useState(80);
   const [recommendedAccuracy, setRecommendedAccuracy] = useState(0);
+  
+  // Secondary accuracy stats
+  const [meleeAccuracy, setMeleeAccuracy] = useState(0);
+  const [rangedAccuracy, setRangedAccuracy] = useState(0);
+  const [impeccableMagic, setImpeccableMagic] = useState(0);
   
   const [hitRate, setHitRate] = useState(0);
   const [adjustedHitRate, setAdjustedHitRate] = useState(0);
@@ -45,12 +51,38 @@ const OdinAccuracyCalculator = () => {
     return closestDiff;
   };
 
+  // Get the appropriate secondary accuracy stat based on class and attack type
+  const getSecondaryAccuracyStat = (characterClass, attackType) => {
+    if (characterClass === 'mage' || characterClass === 'priest') {
+      // Magic classes use Impeccable Magic for skill attacks
+      if (attackType === 'normal') {
+        return impeccableMagic;
+      }
+    } else if (characterClass === 'warrior' || characterClass === 'assassin') {
+      // Melee classes use Melee Accuracy for normal attacks
+      if (attackType === 'normal') {
+        return meleeAccuracy;
+      }
+    } else if (characterClass === 'sniper' || characterClass === 'archer') {
+      // Ranged classes use Ranged Accuracy for normal attacks
+      if (attackType === 'normal') {
+        return rangedAccuracy;
+      }
+    }
+    
+    // Return 0 if no special accuracy applies
+    return 0;
+  };
+
   useEffect(() => {
+    // Get the appropriate secondary accuracy stat
+    const secondaryAcc = getSecondaryAccuracyStat(characterClass, attackType);
+    
     // Calculate accuracy difference
     const levelDifference = characterLevel - monsterLevel;
     const levelPenalty = levelDifference * 3;
     const baseAccuracyNeeded = characterLevel * 3;
-    const adjustedAccuracy = accuracyStat + additionalAccuracy - baseAccuracyNeeded + levelPenalty;
+    const adjustedAccuracy = accuracyStat + additionalAccuracy + secondaryAcc - baseAccuracyNeeded + levelPenalty;
     
     setAccuracyDiff(adjustedAccuracy);
     
@@ -82,7 +114,7 @@ const OdinAccuracyCalculator = () => {
     // Calculate recommended accuracy for target hit rate
     calculateRecommendedAccuracy();
     
-  }, [characterLevel, monsterLevel, accuracyStat, region, attackType, additionalAccuracy, targetHitRate]);
+  }, [characterLevel, monsterLevel, accuracyStat, region, attackType, additionalAccuracy, targetHitRate, characterClass, meleeAccuracy, rangedAccuracy, impeccableMagic]);
   
   const calculateRecommendedAccuracy = () => {
     // Adjust target hit rate based on region and attack type
@@ -107,7 +139,11 @@ const OdinAccuracyCalculator = () => {
     const levelPenalty = levelDifference * 3;
     const baseAccuracyNeeded = characterLevel * 3;
     
-    const recommendedAcc = baseAccuracyNeeded - levelPenalty + neededAccuracyDiff - additionalAccuracy;
+    // Get secondary accuracy stat
+    const secondaryAcc = getSecondaryAccuracyStat(characterClass, attackType);
+    
+    // Subtract secondary accuracy and additional accuracy from required accuracy
+    const recommendedAcc = baseAccuracyNeeded - levelPenalty + neededAccuracyDiff - additionalAccuracy - secondaryAcc;
     setRecommendedAccuracy(recommendedAcc);
   };
   
@@ -167,7 +203,25 @@ const OdinAccuracyCalculator = () => {
         </div>
         
         <div className="form-group">
-          <label className="form-label">Your Accuracy Stat</label>
+          <label className="form-label">Character Class</label>
+          <select
+            value={characterClass}
+            onChange={(e) => setCharacterClass(e.target.value)}
+            className="form-select"
+          >
+            <option value="warrior">Warrior (Melee Accuracy)</option>
+            <option value="assassin">Assassin (Melee Accuracy)</option>
+            <option value="sniper">Sniper (Ranged Accuracy)</option>
+            <option value="mage">Mage (Impeccable Magic)</option>
+            <option value="priest">Priest (Impeccable Magic)</option>
+            <option value="none">Other (No Secondary Accuracy)</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="form-grid">
+        <div className="form-group">
+          <label className="form-label">Your Base Accuracy Stat</label>
           <input
             type="number"
             value={accuracyStat}
@@ -176,6 +230,46 @@ const OdinAccuracyCalculator = () => {
             className="form-input"
           />
         </div>
+        
+        {/* Secondary accuracy stats - conditionally shown based on class */}
+        {(characterClass === 'warrior' || characterClass === 'assassin') && (
+          <div className="form-group">
+            <label className="form-label">Melee Accuracy</label>
+            <input
+              type="number"
+              value={meleeAccuracy}
+              onChange={(e) => setMeleeAccuracy(parseInt(e.target.value) || 0)}
+              min="0"
+              className="form-input"
+            />
+          </div>
+        )}
+        
+        {(characterClass === 'sniper') && (
+          <div className="form-group">
+            <label className="form-label">Ranged Accuracy</label>
+            <input
+              type="number"
+              value={rangedAccuracy}
+              onChange={(e) => setRangedAccuracy(parseInt(e.target.value) || 0)}
+              min="0"
+              className="form-input"
+            />
+          </div>
+        )}
+        
+        {(characterClass === 'mage' || characterClass === 'priest') && (
+          <div className="form-group">
+            <label className="form-label">Impeccable Magic</label>
+            <input
+              type="number"
+              value={impeccableMagic}
+              onChange={(e) => setImpeccableMagic(parseInt(e.target.value) || 0)}
+              min="0"
+              className="form-input"
+            />
+          </div>
+        )}
         
         <div className="form-group">
           <label className="form-label">Region</label>
@@ -253,7 +347,7 @@ const OdinAccuracyCalculator = () => {
           <div className="results-value">{characterLevel - monsterLevel} ({(characterLevel - monsterLevel) * 3} accuracy points)</div>
           
           <div className="results-label">Accuracy differential:</div>
-          <div className="results-value">{accuracyDiff + additionalAccuracy}</div>
+          <div className="results-value">{accuracyDiff}</div>
           
           <div className="results-label">Base hit rate:</div>
           <div className="results-value">{hitRate.toFixed(2)}%</div>
