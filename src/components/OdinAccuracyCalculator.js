@@ -289,7 +289,6 @@ const OdinAccuracyCalculator = () => {
           <h3 className="tips-title">Strategy Tips</h3>
           <ul className="tips-list">
             <li>When fighting higher-level monsters, prioritize using skills over basic attacks</li>
-            <li>Accuracy becomes more effective as you get more of it - each point is more valuable than the last</li>
             <li>For optimal performance in endgame zones, aim for 85%+ hit rate</li>
             <li>In Midgard zones, you can get by with less accuracy due to the +20% hidden bonus</li>
             <li>If your hit rate is below 70%, prioritize accuracy over other stats</li>
