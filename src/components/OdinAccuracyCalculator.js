@@ -54,7 +54,7 @@ const OdinAccuracyCalculator = () => {
   // Get the appropriate secondary accuracy stat based on class and attack type
   const getSecondaryAccuracyStat = (characterClass, attackType) => {
     if (characterClass === 'mage' || characterClass === 'priest') {
-      // Magic classes use Impeccable Magic for skill attacks
+      // Magic classes use Magic Accuracy for skill attacks
       if (attackType === 'normal') {
         return impeccableMagic;
       }
@@ -212,8 +212,8 @@ const OdinAccuracyCalculator = () => {
             <option value="warrior">Warrior (Melee Accuracy)</option>
             <option value="assassin">Assassin (Melee Accuracy)</option>
             <option value="sniper">Sniper (Ranged Accuracy)</option>
-            <option value="mage">Mage (Impeccable Magic)</option>
-            <option value="priest">Priest (Impeccable Magic)</option>
+            <option value="mage">Mage (Magic Accuracy)</option>
+            <option value="priest">Priest (Magic Accuracy)</option>
             <option value="none">Other (No Secondary Accuracy)</option>
           </select>
         </div>
@@ -260,7 +260,7 @@ const OdinAccuracyCalculator = () => {
         
         {(characterClass === 'mage' || characterClass === 'priest') && (
           <div className="form-group">
-            <label className="form-label">Impeccable Magic</label>
+            <label className="form-label">Magic Accuracy</label>
             <input
               type="number"
               value={impeccableMagic}
