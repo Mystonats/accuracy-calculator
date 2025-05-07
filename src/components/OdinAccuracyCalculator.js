@@ -340,7 +340,7 @@ const OdinAccuracyCalculator = () => {
         {renderAccuracyGauge()}
         
         <div className="results-grid">
-          <div className="results-label">Base accuracy needed:</div>
+          <div className="results-label">Recommended accuracy for character level:</div>
           <div className="results-value">{characterLevel * 3}</div>
           
           <div className="results-label">Level difference:</div>
