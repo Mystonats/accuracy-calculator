@@ -9,6 +9,7 @@ const OdinAccuracyCalculator = () => {
   const [attackType, setAttackType] = useState('normal');
   const [characterClass, setCharacterClass] = useState('warrior');
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAccuracyTable, setShowAccuracyTable] = useState(false);
   const [additionalAccuracy, setAdditionalAccuracy] = useState(0);
   const [targetHitRate, setTargetHitRate] = useState(80);
   const [recommendedAccuracy, setRecommendedAccuracy] = useState(0);
@@ -301,15 +302,18 @@ const OdinAccuracyCalculator = () => {
           className="advanced-button" 
           onClick={() => setShowAdvanced(!showAdvanced)}
         >
-          {showAdvanced ? 'Hide Advanced Options' : 'Show Advanced Options'}
+          {showAdvanced ? 'Hide Advanced Options' : 'Show Buff Simulator & Target Hit Rate'}
         </button>
       </div>
       
       {showAdvanced && (
         <div className="advanced-options">
-          <div className="form-grid">
+          <div className="advanced-options-grid">
             <div className="form-group">
-              <label className="form-label">Additional Accuracy (Buffs/Gear)</label>
+              <div className="label-row">
+                <label className="form-label">Additional Accuracy</label>
+                <i className="fa-solid fa-circle-info tooltip-icon" title="Enter accuracy bonuses from buffs, food or items that aren't yet active"></i>
+              </div>
               <input
                 type="number"
                 value={additionalAccuracy}
@@ -320,7 +324,10 @@ const OdinAccuracyCalculator = () => {
             </div>
             
             <div className="form-group">
-              <label className="form-label">Target Hit Rate (%)</label>
+              <div className="label-row">
+                <label className="form-label">Target Hit Rate (%)</label>
+                <i className="fa-solid fa-circle-info tooltip-icon" title="Your desired hit percentage goal"></i>
+              </div>
               <input
                 type="number"
                 value={targetHitRate}
@@ -339,31 +346,139 @@ const OdinAccuracyCalculator = () => {
         
         {renderAccuracyGauge()}
         
-        <div className="results-grid">
-          <div className="results-label">Recommended accuracy for character level:</div>
-          <div className="results-value">{characterLevel * 3}</div>
-          
-          <div className="results-label">Level difference:</div>
-          <div className="results-value">{characterLevel - monsterLevel} ({(characterLevel - monsterLevel) * 3} accuracy points)</div>
-          
-          <div className="results-label">Accuracy differential:</div>
-          <div className="results-value">{accuracyDiff}</div>
-          
-          <div className="results-label">Base hit rate:</div>
-          <div className="results-value">{hitRate.toFixed(2)}%</div>
-          
-          {showAdvanced && (
-            <>
-              <div className="results-label recommended">Recommended accuracy for {targetHitRate}% hit rate:</div>
-              <div className="results-value recommended">{recommendedAccuracy}</div>
-              
-              <div className="results-label">Accuracy needed to increase:</div>
-              <div className="results-value">{Math.max(0, recommendedAccuracy - accuracyStat)}</div>
-            </>
-          )}
+        <div className="results-columns">
+          <div className="results-column">
+            <h3 className="results-subtitle">Character & Monster</h3>
+            <div className="results-item">
+              <span className="results-label">Character Level:</span>
+              <span className="results-value">{characterLevel}</span>
+            </div>
+            <div className="results-item">
+              <span className="results-label">Monster Level:</span>
+              <span className="results-value">{monsterLevel}</span>
+            </div>
+            <div className="results-item">
+              <span className="results-label">Level Difference:</span>
+              <span className="results-value">{characterLevel - monsterLevel} ({(characterLevel - monsterLevel) * 3} pts)</span>
+            </div>
+            <div className="results-item">
+              <span className="results-label">Your Accuracy:</span>
+              <span className="results-value">{accuracyStat}</span>
+            </div>
+          </div>
+
+          <div className="results-column">
+            <h3 className="results-subtitle">Hit Rate Details</h3>
+            <div className="results-item">
+              <span className="results-label">Accuracy Differential:</span>
+              <span className="results-value">{accuracyDiff}</span>
+            </div>
+            <div className="results-item">
+              <span className="results-label">Base Hit Rate:</span>
+              <span className="results-value">{hitRate.toFixed(2)}%</span>
+            </div>
+            <div className="results-item">
+              <span className="results-label">Bonuses:</span>
+              <span className="results-value">
+                {region === 'midgard' ? 'Region +20%, ' : ''}
+                {attackType === 'skill' ? 'Skill +10%' : 'None'}
+              </span>
+            </div>
+            <div className="results-item highlight">
+              <span className="results-label">Final Hit Rate:</span>
+              <span className="results-value hit-rate">{adjustedHitRate.toFixed(2)}%</span>
+            </div>
+          </div>
         </div>
+        
+        {showAdvanced && (
+          <div className="target-hit-rate">
+            <h3 className="results-subtitle">Target Hit Rate Analysis</h3>
+            <div className="results-item">
+              <span className="results-label">For {targetHitRate}% hit rate:</span>
+              <span className="results-value recommended">{recommendedAccuracy} accuracy needed</span>
+            </div>
+            <div className="results-item">
+              <span className="results-label">You need:</span>
+              <span className="results-value">{Math.max(0, recommendedAccuracy - accuracyStat)} more accuracy</span>
+            </div>
+          </div>
+        )}
       </div>
-      
+
+      <div className="accuracy-table-section">
+        <button 
+          className="table-toggle-button"
+          onClick={() => setShowAccuracyTable(!showAccuracyTable)}
+        >
+          {showAccuracyTable ? 'Hide Accuracy Table' : 'Show Accuracy Table Reference'} 
+          <i className={`fas fa-chevron-${showAccuracyTable ? 'up' : 'down'}`}></i>
+        </button>
+        
+        {showAccuracyTable && (
+          <div className="accuracy-table-container">
+            <p className="table-context">
+              Your accuracy differential of <strong>{accuracyDiff}</strong> gives you a base hit rate of <strong>{hitRate.toFixed(2)}%</strong> according to the table below.
+              {accuracyDiff < 5 && " Notice how improving your accuracy differential to higher values provides increasingly better returns."}
+            </p>
+            
+            <div className="table-columns">
+              <div className="table-column">
+                <h4 className="column-title">Positive Differentials</h4>
+                <div className="table-wrapper">
+                  <table className="accuracy-table">
+                    <thead>
+                      <tr>
+                        <th>Differential</th>
+                        <th>Hit Rate (%)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(accuracyTable)
+                        .filter(([diff]) => parseInt(diff) >= 0)
+                        .sort((a, b) => parseInt(b[0]) - parseInt(a[0]))
+                        .map(([diff, rate]) => (
+                          <tr key={diff} className={diff == accuracyDiff ? 'highlighted-row' : ''}>
+                            <td>+{diff}</td>
+                            <td>{rate.toFixed(2)}%</td>
+                          </tr>
+                        ))
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div className="table-column">
+                <h4 className="column-title">Negative Differentials</h4>
+                <div className="table-wrapper">
+                  <table className="accuracy-table">
+                    <thead>
+                      <tr>
+                        <th>Differential</th>
+                        <th>Hit Rate (%)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(accuracyTable)
+                        .filter(([diff]) => parseInt(diff) < 0)
+                        .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                        .map(([diff, rate]) => (
+                          <tr key={diff} className={diff == accuracyDiff ? 'highlighted-row' : ''}>
+                            <td>{diff}</td>
+                            <td>{rate.toFixed(2)}%</td>
+                          </tr>
+                        ))
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="recommendations-section">
         <h2 className="section-title">Recommendations</h2>
         
