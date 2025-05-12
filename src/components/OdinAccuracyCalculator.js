@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './OdinAccuracyCalculator.css';
+import SimplifiedAccuracySimulator from './OdinAccuracySimulator';
 
 const OdinAccuracyCalculator = () => {
   const [characterLevel, setCharacterLevel] = useState(50);
@@ -9,15 +10,15 @@ const OdinAccuracyCalculator = () => {
   const [attackType, setAttackType] = useState('normal');
   const [characterClass, setCharacterClass] = useState('warrior');
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showAccuracyTable, setShowAccuracyTable] = useState(false);
   const [additionalAccuracy, setAdditionalAccuracy] = useState(0);
   const [targetHitRate, setTargetHitRate] = useState(80);
   const [recommendedAccuracy, setRecommendedAccuracy] = useState(0);
+  const [activeTab, setActiveTab] = useState('table'); // For tab interface
   
   // Secondary accuracy stats
   const [meleeAccuracy, setMeleeAccuracy] = useState(0);
   const [rangedAccuracy, setRangedAccuracy] = useState(0);
-  const [impeccableMagic, setImpeccableMagic] = useState(0);
+  const [magicAccuracy, setMagicAccuracy] = useState(0);
   
   const [hitRate, setHitRate] = useState(0);
   const [adjustedHitRate, setAdjustedHitRate] = useState(0);
@@ -57,7 +58,7 @@ const OdinAccuracyCalculator = () => {
     if (characterClass === 'mage' || characterClass === 'priest') {
       // Magic classes use Magic Accuracy for skill attacks
       if (attackType === 'normal') {
-        return impeccableMagic;
+        return magicAccuracy;
       }
     } else if (characterClass === 'warrior' || characterClass === 'assassin') {
       // Melee classes use Melee Accuracy for normal attacks
@@ -115,7 +116,7 @@ const OdinAccuracyCalculator = () => {
     // Calculate recommended accuracy for target hit rate
     calculateRecommendedAccuracy();
     
-  }, [characterLevel, monsterLevel, accuracyStat, region, attackType, additionalAccuracy, targetHitRate, characterClass, meleeAccuracy, rangedAccuracy, impeccableMagic]);
+  }, [accuracyTable, characterLevel, monsterLevel, accuracyStat, region, attackType, additionalAccuracy, targetHitRate, characterClass, meleeAccuracy, rangedAccuracy, magicAccuracy]);
   
   const calculateRecommendedAccuracy = () => {
     // Adjust target hit rate based on region and attack type
@@ -264,8 +265,8 @@ const OdinAccuracyCalculator = () => {
             <label className="form-label">Magic Accuracy</label>
             <input
               type="number"
-              value={impeccableMagic}
-              onChange={(e) => setImpeccableMagic(parseInt(e.target.value) || 0)}
+              value={magicAccuracy}
+              onChange={(e) => setMagicAccuracy(parseInt(e.target.value) || 0)}
               min="0"
               className="form-input"
             />
@@ -308,12 +309,12 @@ const OdinAccuracyCalculator = () => {
       
       {showAdvanced && (
         <div className="advanced-options">
-          <div className="advanced-options-grid">
+          <div className="form-grid">
             <div className="form-group">
-              <div className="label-row">
-                <label className="form-label">Additional Accuracy</label>
+              <label className="form-label">
+                Additional Accuracy
                 <i className="fa-solid fa-circle-info tooltip-icon" title="Enter accuracy bonuses from buffs, food or items that aren't yet active"></i>
-              </div>
+              </label>
               <input
                 type="number"
                 value={additionalAccuracy}
@@ -324,10 +325,11 @@ const OdinAccuracyCalculator = () => {
             </div>
             
             <div className="form-group">
-              <div className="label-row">
-                <label className="form-label">Target Hit Rate (%)</label>
+              <label className="form-label">
+                Target Hit Rate (%)
+                
                 <i className="fa-solid fa-circle-info tooltip-icon" title="Your desired hit percentage goal"></i>
-              </div>
+              </label>
               <input
                 type="number"
                 value={targetHitRate}
@@ -405,80 +407,106 @@ const OdinAccuracyCalculator = () => {
           </div>
         )}
       </div>
-
-      <div className="accuracy-table-section">
-        <button 
-          className="table-toggle-button"
-          onClick={() => setShowAccuracyTable(!showAccuracyTable)}
-        >
-          {showAccuracyTable ? 'Hide Accuracy Table' : 'Show Accuracy Table Reference'} 
-          <i className={`fas fa-chevron-${showAccuracyTable ? 'up' : 'down'}`}></i>
-        </button>
+      
+      {/* Tabbed interface for Accuracy Table and Simulator */}
+      <div className="accuracy-tabs">
+        <div className="accuracy-tab-buttons">
+          <button 
+            className={`tab-button ${activeTab === 'table' ? 'active' : ''}`}
+            onClick={() => setActiveTab('table')}
+          >
+            <i className="fas fa-table"></i> Accuracy Table
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'simulator' ? 'active' : ''}`}
+            onClick={() => setActiveTab('simulator')}
+          >
+            <i className="fas fa-dice"></i> Hit Rate Simulator
+          </button>
+        </div>
         
-        {showAccuracyTable && (
-          <div className="accuracy-table-container">
-            <p className="table-context">
-              Your accuracy differential of <strong>{accuracyDiff}</strong> gives you a base hit rate of <strong>{hitRate.toFixed(2)}%</strong> according to the table below.
-              {accuracyDiff < 5 && " Notice how improving your accuracy differential to higher values provides increasingly better returns."}
-            </p>
-            
-            <div className="table-columns">
-              <div className="table-column">
-                <h4 className="column-title">Positive Differentials</h4>
-                <div className="table-wrapper">
-                  <table className="accuracy-table">
-                    <thead>
-                      <tr>
-                        <th>Differential</th>
-                        <th>Hit Rate (%)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(accuracyTable)
-                        .filter(([diff]) => parseInt(diff) >= 0)
-                        .sort((a, b) => parseInt(b[0]) - parseInt(a[0]))
-                        .map(([diff, rate]) => (
-                          <tr key={diff} className={diff == accuracyDiff ? 'highlighted-row' : ''}>
-                            <td>+{diff}</td>
-                            <td>{rate.toFixed(2)}%</td>
-                          </tr>
-                        ))
-                      }
-                    </tbody>
-                  </table>
+        <div className="accuracy-tab-content">
+          {activeTab === 'table' && (
+            <div className="accuracy-table-container">
+              <p className="table-context">
+                Your accuracy differential of <strong>{accuracyDiff}</strong> gives you a base hit rate of <strong>{hitRate.toFixed(2)}%</strong> according to the table below.
+                {accuracyDiff < 5 && " Notice how improving your accuracy differential to higher values provides increasingly better returns."}
+              </p>
+              
+              <div className="table-columns">
+                <div className="table-column">
+                  <h4 className="column-title">Positive Differentials</h4>
+                  <div className="table-wrapper">
+                    <table className="accuracy-table">
+                      <thead>
+                        <tr>
+                          <th>Differential</th>
+                          <th>Hit Rate (%)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(accuracyTable)
+                          .filter(([diff]) => parseInt(diff) >= 0)
+                          .sort((a, b) => parseInt(b[0]) - parseInt(a[0]))
+                          .map(([diff, rate]) => (
+                            <tr key={diff} className={diff === accuracyDiff ? 'highlighted-row' : ''}>
+                              <td>+{diff}</td>
+                              <td>{rate.toFixed(2)}%</td>
+                            </tr>
+                          ))
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                
+                <div className="table-column">
+                  <h4 className="column-title">Negative Differentials</h4>
+                  <div className="table-wrapper">
+                    <table className="accuracy-table">
+                      <thead>
+                        <tr>
+                          <th>Differential</th>
+                          <th>Hit Rate (%)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(accuracyTable)
+                          .filter(([diff]) => parseInt(diff) < 0)
+                          .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                          .map(([diff, rate]) => (
+                            <tr key={diff} className={diff === accuracyDiff ? 'highlighted-row' : ''}>
+                              <td>{diff}</td>
+                              <td>{rate.toFixed(2)}%</td>
+                            </tr>
+                          ))
+                        }
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
               
-              <div className="table-column">
-                <h4 className="column-title">Negative Differentials</h4>
-                <div className="table-wrapper">
-                  <table className="accuracy-table">
-                    <thead>
-                      <tr>
-                        <th>Differential</th>
-                        <th>Hit Rate (%)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(accuracyTable)
-                        .filter(([diff]) => parseInt(diff) < 0)
-                        .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-                        .map(([diff, rate]) => (
-                          <tr key={diff} className={diff == accuracyDiff ? 'highlighted-row' : ''}>
-                            <td>{diff}</td>
-                            <td>{rate.toFixed(2)}%</td>
-                          </tr>
-                        ))
-                      }
-                    </tbody>
-                  </table>
-                </div>
+              <div className="table-notes">
+                <p>
+                  <i className="fas fa-info-circle"></i> This table shows the relationship between accuracy differential and hit rate. The highlighted row shows your current values.
+                </p>
+                <p>
+                  <i className="fas fa-lightbulb"></i> <strong>Info:</strong>There is a maximum of 88.89% and a minimum of 45.45% even when the -/+ differential is lower/higher
+                </p>
               </div>
             </div>
-          </div>
-        )}
+          )}
+          
+          {activeTab === 'simulator' && (
+            <SimplifiedAccuracySimulator 
+              hitRate={adjustedHitRate} 
+              accuracyDiff={accuracyDiff}
+            />
+          )}
+        </div>
       </div>
-
+      
       <div className="recommendations-section">
         <h2 className="section-title">Recommendations</h2>
         
@@ -507,7 +535,7 @@ const OdinAccuracyCalculator = () => {
       
       <div className="footer">
         <p>Based on data from <a href="https://www.inven.co.kr/webzine/news/?news=259851&site=odin" target="_blank" rel="noopener noreferrer">Inven.co.kr article</a></p>
-        <p className="version">Calculator Version 1.1 | Last Updated: May 2025</p>
+        <p className="version">Calculator Version 1.2 | Last Updated: May 2025</p>
       </div>
     </div>
   );
