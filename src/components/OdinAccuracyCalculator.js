@@ -494,6 +494,9 @@ const OdinAccuracyCalculator = () => {
                 <p>
                   <i className="fas fa-lightbulb"></i> <strong>Info:</strong>There is a maximum of 88.89% and a minimum of 45.45% even when the -/+ differential is lower/higher
                 </p>
+                <p>
+                  <i class="fa-solid fa-triangle-exclamation"></i> Also a big notice, it seems that the underground dungeon has some different hit rate, since im missing some tests I would only use the hit rate for the open field. Use it with caution, when u try to calculate it for the underground dungeon!
+                </p>
               </div>
             </div>
           )}
